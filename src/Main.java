@@ -1,101 +1,44 @@
-import java.io.File;
-import java.io.FileOutputStream;
-import java.io.IOException;
+import java.io.*;
+import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.Date;
+import java.util.List;
 
 public class Main {
     public static void main(String[] args) {
-        String path1 = "/home/maksim/Games";
-        String path2 = "/home/maksim/Games/src";
-        String path3 = "/home/maksim/Games/src/main";
-        String path4 = "/home/maksim/Games/res";
-        String path5 = "/home/maksim/Games/temp";
+        StringBuilder stringBuilder = new StringBuilder();
+        final String PATH = "/home/maksim/Games/";
+        List<File> dir = new ArrayList<>(Arrays.asList(
+                new File(PATH, "src"), new File(PATH, "res"), new File(PATH, "savegames"), new File(PATH, "temp"),
+                new File(PATH + "src", "main"), new File(PATH + "src", "test"),
+                new File(PATH + "res", "drawables"), new File(PATH + "res", "vectors"), new File(PATH + "res", "icons"),
+                new File(PATH + "src/main", "Main.java"), new File(PATH + "src/main", "Utils.java"),
+                new File(PATH + "temp", "temp.txt")
+        ));
 
-        String[] dirName1 = {"src", "res", "savegames", "temp"};
-        String[] dirName2 = {"main", "test"};
-        String[] dirName3 = {"drawables", "vectors", "icons"};
-        String[] fileName1 = {"Main.java", "Utils.java"};
-        String fileName2 = "temp.txt";
+        for (File file : dir) {
+            stringBuilder.append(temp(file)).append(new Date()).append("  ");
 
-        StringBuilder sb = new StringBuilder();
-
-        sb.append(createDir(path1, dirName1));
-        sb.append(createDir(path2, dirName2));
-        sb.append(createFile(path3, fileName1));
-        sb.append(createDir(path4, dirName3));
-        sb.append(createFile(path5, fileName2));
-
-        try (FileOutputStream logs = new FileOutputStream(path5 + "/" + fileName2, true)) {
-            byte[] bytes = sb.toString().getBytes();
-            logs.write(bytes, 0, bytes.length);
+        }
+        try (FileWriter fileWriter = new FileWriter(PATH + "temp/temp.txt")) {
+            fileWriter.write(stringBuilder.toString());
         } catch (IOException e) {
-            System.out.println(e.getMessage());
+            e.getMessage();
         }
-
-
     }
 
-    public static StringBuilder createDir(String path, String... names) {
-        StringBuilder sb = new StringBuilder();
-        Date date = new Date();
-        for (String name : names) {
-            File newDirectory = new File(path, name);
-            if (!newDirectory.exists()) {
-                if (newDirectory.mkdir()) {
-                    sb.
-                            append(date + "  ").
-                            append(newDirectory.getName() + "   ").
-                            append(" директрория успешно создана по пути ").
-                            append(newDirectory.getAbsolutePath() + "\n");
-                } else {
-                    sb.
-                            append(date + "  ").
-                            append(newDirectory.getName() + "   ").
-                            append(" директрория не создана по пути ").
-                            append(newDirectory.getAbsolutePath() + "\n");
-                }
+    public static String temp(File file) {
+        boolean result = true;
+        String name = file.getName();
+        try {
+            if (name.contains(".")) {
+                result = file.createNewFile();
             } else {
-                sb.
-                        append(date + "  ").
-                        append(newDirectory.getName() + "   ").
-                        append(" директрория уже существует по пути ").
-                        append(newDirectory.getAbsolutePath() + "\n");
+                result = file.mkdirs();
             }
+        } catch (IOException e) {
+            e.printStackTrace();
         }
-        return sb;
-    }
-
-
-    public static StringBuilder createFile(String path, String... names) {
-        StringBuilder sb = new StringBuilder();
-        Date date = new Date();
-        for (String name : names) {
-            File newFile = new File(path, name);
-            if (!newFile.exists()) {
-                try {
-                    if (newFile.createNewFile()) {
-                        sb.
-                                append(date + "  ").
-                                append(newFile.getName() + "   ").
-                                append(" файл успешно создан по пути ").
-                                append(newFile.getAbsolutePath() + "\n");
-                    }
-                } catch (IOException e) {
-                    sb.
-                            append(date + "   ").
-                            append(newFile.getName() + "  ").
-                            append(" файл не создан по пути ").
-                            append(newFile.getAbsolutePath() + "  ").
-                            append(e.getMessage() + "\n");
-                }
-            } else {
-                sb.
-                        append(date + "   ").
-                        append(newFile.getName() + "  ").
-                        append(" файл уже существует по пути ").
-                        append(newFile.getAbsolutePath() + "\n");
-            }
-        }
-        return sb;
+        return result ? name + "успешно создан\n" : name + "не создан\n";
     }
 }
